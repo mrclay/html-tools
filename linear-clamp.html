@@ -100,6 +100,9 @@
     const inputs = document.querySelectorAll('input');
     const resultEl = document.getElementById('result');
 
+    // Helper to limit to 3 decimals and remove trailing zeroes
+    const fmt = (num) => parseFloat(Number(num).toFixed(3));
+
     function update() {
         const v = {};
         inputs.forEach(i => v[i.id] = parseFloat(i.value) || 0);
@@ -118,13 +121,13 @@
 
         const slope = deltaSize / deltaWidth;
         const intercept = (v.minS - slope * v.minW) / 16;
-        const slopeVw = (slope * 100).toFixed(3);
         
+        const slopeVw = fmt(slope * 100);
         const sign = intercept >= 0 ? '+' : '-';
-        const absIntercept = Math.abs(intercept).toFixed(3);
+        const absIntercept = fmt(Math.abs(intercept));
         
-        const minRem = (v.minS/16).toFixed(3);
-        const maxRem = (v.maxS/16).toFixed(3);
+        const minRem = fmt(v.minS / 16);
+        const maxRem = fmt(v.maxS / 16);
         
         const output = `/* ${window.location.href} */\n--fluid-size: clamp(${minRem}rem, ${slopeVw}vw ${sign} ${absIntercept}rem, ${maxRem}rem);`;
         
@@ -139,7 +142,6 @@
         setTimeout(() => resultEl.style.backgroundColor = originalBg, 150);
     }
 
-    // Auto-select text on focus
     inputs.forEach(i => {
         i.addEventListener('focus', () => i.select());
         i.addEventListener('input', update);
