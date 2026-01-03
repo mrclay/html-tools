@@ -55,6 +55,7 @@
             border-radius: 4px;
             font-size: 1rem;
             outline: none;
+            transition: border-color 0.2s;
         }
 
         input:focus { border-color: var(--primary); }
@@ -65,11 +66,12 @@
             padding: 1.5rem;
             border-radius: 6px;
             font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             white-space: pre-wrap;
             cursor: pointer;
             border-left: 4px solid #10b981;
             min-height: 3.5rem;
+            line-height: 1.4;
         }
 
         .hint {
@@ -84,10 +86,10 @@
 
 <div class="container">
     <div class="grid">
-        <div class="group"><label>Min Size (px)</label><input type="number" id="minS" value="16"></div>
-        <div class="group"><label>Max Size (px)</label><input type="number" id="maxS" value="48"></div>
-        <div class="group"><label>Min Viewport (px)</label><input type="number" id="minW" value="320"></div>
-        <div class="group"><label>Max Viewport (px)</label><input type="number" id="maxW" value="1200"></div>
+        <div class="group"><label>Min Size (px)</label><input type="text" id="minS" value="16"></div>
+        <div class="group"><label>Max Size (px)</label><input type="text" id="maxS" value="48"></div>
+        <div class="group"><label>Min Viewport (px)</label><input type="text" id="minW" value="320"></div>
+        <div class="group"><label>Max Viewport (px)</label><input type="text" id="maxW" value="1200"></div>
     </div>
 
     <span class="hint">Click to copy:</span>
@@ -106,12 +108,11 @@
         const params = new URLSearchParams(v);
         window.history.replaceState(null, '', '?' + params.toString());
 
-        // Calculations
         const deltaSize = v.maxS - v.minS;
         const deltaWidth = v.maxW - v.minW;
         
         if (deltaWidth === 0) {
-            resultEl.textContent = "/* Max and Min Width cannot be equal */";
+            resultEl.textContent = "/* Error: Viewport range cannot be zero */";
             return;
         }
 
@@ -138,11 +139,16 @@
         setTimeout(() => resultEl.style.backgroundColor = originalBg, 150);
     }
 
+    // Auto-select text on focus
+    inputs.forEach(i => {
+        i.addEventListener('focus', () => i.select());
+        i.addEventListener('input', update);
+    });
+
     // Load from URL
     const params = new URLSearchParams(window.location.search);
     inputs.forEach(i => { if(params.has(i.id)) i.value = params.get(i.id); });
 
-    inputs.forEach(i => i.addEventListener('input', update));
     update();
 </script>
 
