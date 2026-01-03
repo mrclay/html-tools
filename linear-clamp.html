@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clamp Variable Generator</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .group { display: flex; flex-direction: column; }
+
+        label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 0.4rem;
+        }
+
+        input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: var(--primary);
+            padding: 0.6rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        #result {
+            background: #000;
+            color: #10b981;
+            padding: 1.5rem;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            cursor: pointer;
+            border-left: 4px solid #10b981;
+            min-height: 3.5rem;
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="grid">
+        <div class="group"><label>Min Size (px)</label><input type="number" id="minS" value="16"></div>
+        <div class="group"><label>Max Size (px)</label><input type="number" id="maxS" value="48"></div>
+        <div class="group"><label>Min Viewport (px)</label><input type="number" id="minW" value="320"></div>
+        <div class="group"><label>Max Viewport (px)</label><input type="number" id="maxW" value="1200"></div>
+    </div>
+
+    <span class="hint">Click to copy:</span>
+    <div id="result" onclick="copyCode()"></div>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll('input');
+    const resultEl = document.getElementById('result');
+
+    function update() {
+        const v = {};
+        inputs.forEach(i => v[i.id] = parseFloat(i.value) || 0);
+
+        // Update URL
+        const params = new URLSearchParams(v);
+        window.history.replaceState(null, '', '?' + params.toString());
+
+        // Calculations
+        const deltaSize = v.maxS - v.minS;
+        const deltaWidth = v.maxW - v.minW;
+        
+        if (deltaWidth === 0) {
+            resultEl.textContent = "/* Max and Min Width cannot be equal */";
+            return;
+        }
+
+        const slope = deltaSize / deltaWidth;
+        const intercept = (v.minS - slope * v.minW) / 16;
+        const slopeVw = (slope * 100).toFixed(3);
+        
+        const sign = intercept >= 0 ? '+' : '-';
+        const absIntercept = Math.abs(intercept).toFixed(3);
+        
+        const minRem = (v.minS/16).toFixed(3);
+        const maxRem = (v.maxS/16).toFixed(3);
+        
+        const output = `/* ${window.location.href} */\n--fluid-size: clamp(${minRem}rem, ${slopeVw}vw ${sign} ${absIntercept}rem, ${maxRem}rem);`;
+        
+        resultEl.textContent = output;
+    }
+
+    async function copyCode() {
+        if (!resultEl.textContent) return;
+        await navigator.clipboard.writeText(resultEl.textContent);
+        const originalBg = resultEl.style.backgroundColor;
+        resultEl.style.backgroundColor = "#111";
+        setTimeout(() => resultEl.style.backgroundColor = originalBg, 150);
+    }
+
+    // Load from URL
+    const params = new URLSearchParams(window.location.search);
+    inputs.forEach(i => { if(params.has(i.id)) i.value = params.get(i.id); });
+
+    inputs.forEach(i => i.addEventListener('input', update));
+    update();
+</script>
+
+</body>
+</html>
