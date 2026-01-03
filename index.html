@@ -97,6 +97,11 @@
             font-style: italic;
         }
         
+        /* When tools are added, add class "has-tools" to the tools-list and the empty state will hide */
+        .tools-list.has-tools ~ .empty-state {
+            display: none;
+        }
+        
         footer {
             margin-top: 40px;
             padding-top: 20px;
@@ -141,7 +146,8 @@
             <h2>Available Tools</h2>
             
             <ul class="tools-list">
-                <!-- Tools will be added here as they're created -->
+                <!-- Add tools here as they're created -->
+                <!-- When you add the first tool, add class="has-tools" to the <ul> tag above to hide the empty state -->
                 <!-- Example format:
                 <li>
                     <a href="tool-name.html">Tool Name</a>
@@ -150,6 +156,7 @@
                 -->
             </ul>
             
+            <!-- This empty state is automatically hidden when class="has-tools" is added to the tools-list above -->
             <div class="empty-state">
                 No tools available yet. Check back soon!
             </div>
